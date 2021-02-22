@@ -16,7 +16,30 @@ namespace FontAssembler
 
             var asm = glyphs.Select(x => Pack(x)).SelectMany(x=>x).ToArray();
 
-            File.WriteAllLines(@"../../../asm/glyphs.asm", asm);
+            var lookup = CreateLookup(glyphs);
+
+            File.WriteAllLines(@"../../../asm/glyphs.asm", lookup.Concat(asm));
+        }
+
+        public static IEnumerable<string> CreateLookup(Glyph[] glyphs)
+        {
+            
+
+            for (int c = 32; c < 96; c++)
+            {
+                var glyph = glyphs.Single(x => x.Character == (char)c);
+
+                if (c == 32)
+                {
+                    yield return $"LOOKUP,\t{glyph.Label}";
+                }
+                else
+                {
+                    yield return $"      \t{glyph.Label}";
+                }
+            }
+
+            yield return string.Empty;
         }
 
         public static Glyph ParseLine(string line, char delimiter = '|')
