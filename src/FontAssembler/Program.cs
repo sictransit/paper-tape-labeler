@@ -12,9 +12,9 @@ namespace FontAssembler
         {
             var lines = File.ReadAllLines(@"font/dec_5_bit.txt");
 
-            var glyphs = lines.Select(x => ParseLine(x)).OrderBy(x=>(int)x.Character).ToArray();
+            var glyphs = lines.Select(x => ParseLine(x)).OrderBy(x => (int)x.Character).ToArray();
 
-            var asm = glyphs.Select(x => Pack(x)).SelectMany(x=>x).ToArray();
+            var asm = glyphs.Select(x => Pack(x)).SelectMany(x => x).ToArray();
 
             var lookup = CreateLookup(glyphs);
 
@@ -23,7 +23,7 @@ namespace FontAssembler
 
         public static IEnumerable<string> CreateLookup(Glyph[] glyphs)
         {
-            
+
 
             for (int c = 32; c < 96; c++)
             {
@@ -52,8 +52,8 @@ namespace FontAssembler
             }
 
             return new Glyph(
-                parts[0].Single(), 
-                parts[1].Trim(), 
+                parts[0].Single(),
+                parts[1].Trim(),
                 parts[2].Split(',').Select(x => x.ToDecimal()).ToArray()
                 );
         }
@@ -76,7 +76,7 @@ namespace FontAssembler
 
                     if (lines.Count == 0)
                     {
-                        lines.Add($"{glyph.Label}{new string(' ', 6-glyph.Label.Length)}\t{word.ToOctalString()}");
+                        lines.Add($"{glyph.Label}{new string(' ', 6 - glyph.Label.Length)}\t{word.ToOctalString()}");
                     }
                     else
                     {
