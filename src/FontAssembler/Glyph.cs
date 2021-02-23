@@ -11,11 +11,11 @@ namespace FontAssembler
             Definition = definition.Length % 2 == 0 ? definition : definition.Concat(new[] { 0 }).ToArray();
         }
 
-        public char Character { get; set; }
+        public char Character { get; }
 
-        public string Label { get; set; }
+        public string Label { get; }
 
-        public int[] Definition { get; set; }
+        public int[] Definition { get; }
 
         public override string ToString()
         {

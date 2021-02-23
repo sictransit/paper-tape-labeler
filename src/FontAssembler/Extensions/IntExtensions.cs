@@ -6,7 +6,7 @@ namespace FontAssembler.Extensions
     {
         public static int ToDecimal(this string hex)
         {
-            return Convert.ToInt32(hex.ToString(), 16);
+            return Convert.ToInt32(hex, 16);
         }
 
         public static int ToOctal(this int dec)

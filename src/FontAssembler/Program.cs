@@ -6,26 +6,24 @@ using System.Linq;
 
 namespace FontAssembler
 {
-    class Program
+    public static class Program
     {
-        static void Main(string[] args)
+        public static void Main()
         {
             var lines = File.ReadAllLines(@"font/dec_5_bit.txt");
 
             var glyphs = lines.Select(x => ParseLine(x)).OrderBy(x => (int)x.Character).ToArray();
 
-            var asm = glyphs.Select(x => Pack(x)).SelectMany(x => x).ToArray();
+            var asm = glyphs.Select(Pack).SelectMany(x => x).ToArray();
 
             var lookup = CreateLookup(glyphs);
 
             File.WriteAllLines(@"../../../asm/glyphs.asm", lookup.Concat(asm));
         }
 
-        public static IEnumerable<string> CreateLookup(Glyph[] glyphs)
+        private static IEnumerable<string> CreateLookup(Glyph[] glyphs)
         {
-
-
-            for (int c = 32; c < 96; c++)
+            for (var c = 32; c < 96; c++)
             {
                 var glyph = glyphs.Single(x => x.Character == (char)c);
 
@@ -42,7 +40,7 @@ namespace FontAssembler
             yield return string.Empty;
         }
 
-        public static Glyph ParseLine(string line, char delimiter = '|')
+        private static Glyph ParseLine(string line, char delimiter = '|')
         {
             var parts = line.Split(delimiter, StringSplitOptions.RemoveEmptyEntries);
 
@@ -58,13 +56,13 @@ namespace FontAssembler
                 );
         }
 
-        public static IEnumerable<string> Pack(Glyph glyph)
+        private static IEnumerable<string> Pack(Glyph glyph)
         {
-            int word = 0;
+            var word = 0;
 
             var lines = new List<string>();
 
-            for (int i = 0; i < glyph.Definition.Length; i++)
+            for (var i = 0; i < glyph.Definition.Length; i++)
             {
                 if (i % 2 == 0)
                 {
@@ -74,14 +72,11 @@ namespace FontAssembler
                 {
                     word |= (glyph.Definition[i] & 0b_1111_1100) >> 2;
 
-                    if (lines.Count == 0)
-                    {
-                        lines.Add($"{glyph.Label}{new string(' ', 6 - glyph.Label.Length)}\t{word.ToOctalString()}");
-                    }
-                    else
-                    {
-                        lines.Add($"      \t{word.ToOctalString()}");
-                    }
+                    var line = lines.Count == 0
+                        ? $"{glyph.Label}{new string(' ', 6 - glyph.Label.Length)}\t{word.ToOctalString()}"
+                        : $"      \t{word.ToOctalString()}";
+
+                    lines.Add(line);
 
                     word = 0;
                 }
