@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace FontAssembler
 {
@@ -10,15 +11,34 @@ namespace FontAssembler
     {
         public static void Main()
         {
-            var lines = File.ReadAllLines(@"font/dec_5_bit.txt");
+            const string asmFile = @"../../../asm/glyphs.asm";
+            const string fontFile = @"font/dec_5_bit.txt";
+
+            if (!File.Exists(asmFile))
+            {
+                throw new FileNotFoundException(asmFile);
+            }
+
+            if (!File.Exists(fontFile))
+            {
+                throw new FileNotFoundException(fontFile);
+            }
+
+            var lines = File.ReadAllLines(fontFile);
 
             var glyphs = lines.Select(x => ParseLine(x)).OrderBy(x => (int)x.Character).ToArray();
 
-            var asm = glyphs.Select(Pack).SelectMany(x => x).ToArray();
+            var code = File.ReadAllLines(asmFile).Reverse().SkipWhile(x => !x.Contains("BEWARE!")).Reverse();
 
-            var lookup = CreateLookup(glyphs);
+            var asm = new List<string>();
 
-            File.WriteAllLines(@"../../../asm/glyphs.asm", lookup.Concat(asm));
+            asm.AddRange(code);
+            asm.Add(string.Empty);
+            asm.AddRange(CreateLookup(glyphs));
+            asm.Add(string.Empty);
+            asm.AddRange(glyphs.Select(Pack).SelectMany(x => x).ToArray());                        
+
+            File.WriteAllLines(asmFile, asm);
         }
 
         private static IEnumerable<string> CreateLookup(Glyph[] glyphs)

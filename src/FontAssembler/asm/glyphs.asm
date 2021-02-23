@@ -1,3 +1,7 @@
+/ PAPER TAPE LABELER
+
+/ CODE BELOW THIS LINE IS AUTO-GENERATED. BEWARE!
+
 LOOKUP,	.
       	SY_SPC
       	SY_EXC
@@ -63,6 +67,7 @@ LOOKUP,	.
       	SY_CBR
       	SY_CIR
       	SY_ULN
+
 SY_SPC	7777
       	7700
 SY_EXC	5600
