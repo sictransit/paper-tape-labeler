@@ -1,5 +1,20 @@
 / PAPER TAPE LABELER
 
+        AIX1=10             /SETUP AIX1
+
+        *20                 /GLOBALS
+
+        *200                /LOCATE @ 0200
+
+        CLA CLL             /CLEAR ACC, CLEAR LINK
+
+TTYO,   0                   /TTY OUTPUT SUB-ROUTINE
+        TLS                 /WRITE ACC TO TTY
+        TSF                 /TTY READY? SKIP! 
+        JMP .-1             /CHECK AGAIN
+        CLA                 /CLEAR ACC
+        JMP I TTYO          /RETURN 
+
 / CODE BELOW THIS LINE IS AUTO-GENERATED. BEWARE!
 
 LOOKUP,	.
