@@ -23,21 +23,14 @@ namespace FontAssembler
 
         private static IEnumerable<string> CreateLookup(Glyph[] glyphs)
         {
+            yield return $"LOOKUP,\t.";
+
             for (var c = 32; c < 96; c++)
             {
                 var glyph = glyphs.Single(x => x.Character == (char)c);
 
-                if (c == 32)
-                {
-                    yield return $"LOOKUP,\t{glyph.Label}";
-                }
-                else
-                {
-                    yield return $"      \t{glyph.Label}";
-                }
-            }
-
-            yield return string.Empty;
+                yield return $"      \t{glyph.Label}";
+            }            
         }
 
         private static Glyph ParseLine(string line, char delimiter = '|')

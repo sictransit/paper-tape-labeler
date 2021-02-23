@@ -1,4 +1,5 @@
-LOOKUP,	SY_SPC
+LOOKUP,	.
+      	SY_SPC
       	SY_EXC
       	SY_QTE
       	SY_HSH
@@ -62,7 +63,6 @@ LOOKUP,	SY_SPC
       	SY_CBR
       	SY_CIR
       	SY_ULN
-
 SY_SPC	7777
       	7700
 SY_EXC	5600
