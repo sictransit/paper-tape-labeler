@@ -2,11 +2,10 @@
 
         AIX1=10             /SETUP AIX1
 
-        *20                 /GLOBALS
-
         *200                /LOCATE @ 0200
 
         CLA CLL             /CLEAR ACC, CLEAR LINK
+        HLT                 /TO BE SAFE!
 
 TTYO,   0                   /TTY OUTPUT SUB-ROUTINE
         TLS                 /WRITE ACC TO TTY
