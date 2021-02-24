@@ -34,9 +34,15 @@ namespace FontAssembler
 
             asm.AddRange(code);
             asm.Add(string.Empty);
+            asm.Add("\t*300");
+            asm.Add(string.Empty);
+            asm.AddRange(glyphs.Select(Pack).SelectMany(x => x).ToArray());
+            asm.Add(string.Empty);
+            asm.Add("\t*500");
+            asm.Add(string.Empty);            
             asm.AddRange(CreateLookup(glyphs));
             asm.Add(string.Empty);
-            asm.AddRange(glyphs.Select(Pack).SelectMany(x => x).ToArray());                        
+            asm.Add("$");
 
             File.WriteAllLines(asmFile, asm);
         }
@@ -87,7 +93,7 @@ namespace FontAssembler
                     word |= (glyph.Definition[i] & 0b_1111_1100) >> 2;
 
                     var line = lines.Count == 0
-                        ? $"{glyph.Label}{new string(' ', 6 - glyph.Label.Length)}\t{word.ToOctalString()}"
+                        ? $"{glyph.Label},{new string(' ', 6 - glyph.Label.Length)}\t{word.ToOctalString()}"
                         : $"      \t{word.ToOctalString()}";
 
                     lines.Add(line);
@@ -95,6 +101,12 @@ namespace FontAssembler
                     word = 0;
                 }
             }
+
+            if (glyph.Character == '8')
+            {
+                lines.Add("\t*400");
+            }
+
 
             return lines;
         }
