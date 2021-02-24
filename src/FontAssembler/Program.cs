@@ -43,13 +43,14 @@ namespace FontAssembler
 
         private static IEnumerable<string> CreateLookup(Glyph[] glyphs)
         {
-            yield return $"LOOKUP,\t.";
+            const string label = "LOOKUP,";
+            const string indent = "       ";
 
             for (var c = 32; c < 96; c++)
             {
                 var glyph = glyphs.Single(x => x.Character == (char)c);
 
-                yield return $"      \t{glyph.Label}";
+                yield return $"{(c == 32 ? label : indent)}\t{glyph.Label}";
             }            
         }
 

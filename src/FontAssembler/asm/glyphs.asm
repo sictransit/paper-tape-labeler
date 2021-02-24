@@ -1,86 +1,136 @@
 / PAPER TAPE LABELER
 
         AIX1=10             /SETUP AIX1
+		
+        *20                 /GLOBALS
+		
+KEYBUF,	0
+KEYMSK, 0077                /ALLOW 6 BITS
+KEYOFS, 7737
+KEYSWP, 0
 
         *200                /LOCATE @ 0200
 
         CLA CLL             /CLEAR ACC, CLEAR LINK
         HLT                 /TO BE SAFE!
 
-TTYO,   0                   /TTY OUTPUT SUB-ROUTINE
+LOOP,	JMS TTYIN
+		DCA KEYBUF			/STORE KEY IN ACC
+		TAD KEYMSK
+		CMA
+		AND KEYBUF
+		SNA CLA				/>63?
+		JMP LOOP			/IGNORE KEY
+		AND KEYBUF
+		TAD KEYOFS
+		IAC
+		SNL					/<32?
+		JMP LOOP			/IGNORE KEY
+		AND KEYMSK
+		DCA KEYBUF
+        JMS PRTLTR
+		JMP LOOP
+		
+PRTLTR, 0
+		AND LOOKUP
+		ADD KEYBUF
+		ADD 7776
+		IAC
+		DCA AIX1		
+SWPLP,	TAD I AIX1
+		DCA KEYSWP
+		TAD KEYSWP
+		BSW
+		AND KEYMSK
+		JMS TTYOUT
+		SNA 
+		JMS PRTLTR
+		CLA
+		TAD KEYSWP
+		AND KEYMSK
+		SNA 
+		JMS PRTLTR
+		JMP SWPLP
+
+TTYIN,  0
+        KSF
+        JMP .-1
+        KRB
+        JMP I TTYIN
+
+
+TTYOUT, 0                   /TTY OUTPUT SUB-ROUTINE
         TLS                 /WRITE ACC TO TTY
         TSF                 /TTY READY? SKIP! 
         JMP .-1             /CHECK AGAIN
-        CLA                 /CLEAR ACC
-        JMP I TTYO          /RETURN 
+        JMP I TTYOUT        /RETURN 
 
 / CODE BELOW THIS LINE IS AUTO-GENERATED. BEWARE!
 
-LOOKUP,	.
-      	SY_SPC
-      	SY_EXC
-      	SY_QTE
-      	SY_HSH
-      	SY_DLR
-      	SY_PCT
-      	SY_AMP
-      	SY_APO
-      	SY_OPA
-      	SY_CPA
-      	SY_AST
-      	SY_PLS
-      	SY_COM
-      	SY_DSH
-      	SY_PRD
-      	SY_SLA
-      	DI_0
-      	DI_1
-      	DI_2
-      	DI_3
-      	DI_4
-      	DI_5
-      	DI_6
-      	DI_7
-      	DI_8
-      	DI_9
-      	SY_COL
-      	SY_SCL
-      	SY_LT
-      	SY_EQ
-      	SY_GT
-      	SY_QM
-      	SY_AT
-      	LT_A
-      	LT_B
-      	LT_C
-      	LT_D
-      	LT_E
-      	LT_F
-      	LT_G
-      	LT_H
-      	LT_I
-      	LT_J
-      	LT_K
-      	LT_L
-      	LT_M
-      	LT_N
-      	LT_O
-      	LT_P
-      	LT_Q
-      	LT_R
-      	LT_S
-      	LT_T
-      	LT_U
-      	LT_V
-      	LT_W
-      	LT_X
-      	LT_Y
-      	LT_Z
-      	SY_OBR
-      	SY_BSL
-      	SY_CBR
-      	SY_CIR
-      	SY_ULN
+LOOKUP,	SY_SPC
+       	SY_EXC
+       	SY_QTE
+       	SY_HSH
+       	SY_DLR
+       	SY_PCT
+       	SY_AMP
+       	SY_APO
+       	SY_OPA
+       	SY_CPA
+       	SY_AST
+       	SY_PLS
+       	SY_COM
+       	SY_DSH
+       	SY_PRD
+       	SY_SLA
+       	DI_0
+       	DI_1
+       	DI_2
+       	DI_3
+       	DI_4
+       	DI_5
+       	DI_6
+       	DI_7
+       	DI_8
+       	DI_9
+       	SY_COL
+       	SY_SCL
+       	SY_LT
+       	SY_EQ
+       	SY_GT
+       	SY_QM
+       	SY_AT
+       	LT_A
+       	LT_B
+       	LT_C
+       	LT_D
+       	LT_E
+       	LT_F
+       	LT_G
+       	LT_H
+       	LT_I
+       	LT_J
+       	LT_K
+       	LT_L
+       	LT_M
+       	LT_N
+       	LT_O
+       	LT_P
+       	LT_Q
+       	LT_R
+       	LT_S
+       	LT_T
+       	LT_U
+       	LT_V
+       	LT_W
+       	LT_X
+       	LT_Y
+       	LT_Z
+       	SY_OBR
+       	SY_BSL
+       	SY_CBR
+       	SY_CIR
+       	SY_ULN
 
 SY_SPC	7777
       	7700
