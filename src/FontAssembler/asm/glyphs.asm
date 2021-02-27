@@ -6,52 +6,57 @@
 		
 KEYBUF,	0
 KEYMSK, 0077                /ALLOW 6 BITS
-KEYOFS, 7737
+LOWMSK, 0340
 KEYSWP, 0
+KEYPTR, 0
 SUBONE, 7776
+SUB32,  7737
 
         *200                /LOCATE @ 0200
 
-        CLA CLL             /CLEAR ACC, CLEAR LINK
-        HLT                 /TO BE SAFE!
-
-LOOP,	JMS TTYIN
+MAIN,	CLA CLL
+		JMS TTYIN
 		DCA KEYBUF			/STORE KEY IN ACC
-		TAD KEYMSK
-		CMA
+		TAD KEYMSK			/LOAD MASK
+		CMA					/INVERT
+		AND KEYBUF			/AND WITH KEYBUF
+		SZA CLA				/>63?
+		JMP MAIN			/IGNORE KEY
+		TAD LOWMSK
 		AND KEYBUF
-		SNA CLA				/>63?
-		JMP LOOP			/IGNORE KEY
-		AND KEYBUF
-		TAD KEYOFS
-		IAC
-		SNL					/<32?
-		JMP LOOP			/IGNORE KEY
+		SPA CLA
+		JMP MAIN			/IGNORE KEY
+		TAD KEYBUF
 		AND KEYMSK
+		TAD SUB32
+		IAC
 		DCA KEYBUF
-        JMS PRTLTR
-		JMP LOOP
-		
-PRTLTR, 0
 		TAD LOOKUP
 		TAD KEYBUF
+		IAC
+		DCA KEYPTR
+		TAD I KEYPTR
 		TAD SUBONE
 		IAC
-		DCA AIX1		
-SWPLP,	TAD I AIX1
+		DCA AIX1
+		
+PRTSEG,	TAD I AIX1
 		DCA KEYSWP
 		TAD KEYSWP
 		BSW
+		JMS ROTPRT
+		TAD KEYSWP
+		JMS ROTPRT
+		JMP PRTSEG
+		
+ROTPRT, .
 		AND KEYMSK
+		RTL
 		JMS TTYOUT
 		SNA 
-		JMS PRTLTR
-		CLA
-		TAD KEYSWP
-		AND KEYMSK
-		SNA 
-		JMS PRTLTR
-		JMP SWPLP
+		JMP MAIN
+		CLA CLL
+		JMP I ROTPRT
 
 TTYIN,  0
         KSF
@@ -242,69 +247,70 @@ SYMULN,	4040
 
 	*500
 
-LOOKUP,	SYMSPC
-       	SYMEXC
-       	SYMQTE
-       	SYMHSH
-       	SYMDLR
-       	SYMPCT
-       	SYMAMP
-       	SYMAPO
-       	SYMOPA
-       	SYMCPA
-       	SYMAST
-       	SYMPLS
-       	SYMCOM
-       	SYMDSH
-       	SYMPRD
-       	SYMSLA
-       	DIG0
-       	DIG1
-       	DIG2
-       	DIG3
-       	DIG4
-       	DIG5
-       	DIG6
-       	DIG7
-       	DIG8
-       	DIG9
-       	SYMCOL
-       	SYMSCL
-       	SYMLT
-       	SYMEQ
-       	SYMGT
-       	SYMQM
-       	SYMAT
-       	LTRA
-       	LTRB
-       	LTRC
-       	LTRD
-       	LTRE
-       	LTRF
-       	LTRG
-       	LTRH
-       	LTRI
-       	LTRJ
-       	LTRK
-       	LTRL
-       	LTRM
-       	LTRN
-       	LTRO
-       	LTRP
-       	LTRQ
-       	LTRR
-       	LTRS
-       	LTRT
-       	LTRU
-       	LTRV
-       	LTRW
-       	LTRX
-       	LTRY
-       	LTRZ
-       	SYMOBR
-       	SYMBSL
-       	SYMCBR
-       	SYMCIR
-       	SYMULN
+LOOKUP,	.
+      	SYMSPC
+      	SYMEXC
+      	SYMQTE
+      	SYMHSH
+      	SYMDLR
+      	SYMPCT
+      	SYMAMP
+      	SYMAPO
+      	SYMOPA
+      	SYMCPA
+      	SYMAST
+      	SYMPLS
+      	SYMCOM
+      	SYMDSH
+      	SYMPRD
+      	SYMSLA
+      	DIG0
+      	DIG1
+      	DIG2
+      	DIG3
+      	DIG4
+      	DIG5
+      	DIG6
+      	DIG7
+      	DIG8
+      	DIG9
+      	SYMCOL
+      	SYMSCL
+      	SYMLT
+      	SYMEQ
+      	SYMGT
+      	SYMQM
+      	SYMAT
+      	LTRA
+      	LTRB
+      	LTRC
+      	LTRD
+      	LTRE
+      	LTRF
+      	LTRG
+      	LTRH
+      	LTRI
+      	LTRJ
+      	LTRK
+      	LTRL
+      	LTRM
+      	LTRN
+      	LTRO
+      	LTRP
+      	LTRQ
+      	LTRR
+      	LTRS
+      	LTRT
+      	LTRU
+      	LTRV
+      	LTRW
+      	LTRX
+      	LTRY
+      	LTRZ
+      	SYMOBR
+      	SYMBSL
+      	SYMCBR
+      	SYMCIR
+      	SYMULN
 
 $
