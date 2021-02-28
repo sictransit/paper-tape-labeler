@@ -1,0 +1,331 @@
+
+
+
+      / PDP-8/E PAPER TAPE LABELER                                        Page 1
+
+
+    1              / PDP-8/E PAPER TAPE LABELER
+    2              
+    3        0010          AIX1=10             /SETUP AIX1
+    4                              
+    5        0020          *20                 /GLOBALS
+    6                              
+    7 00020  0000  KEYBUF, 0
+    8 00021  0177  KEYMSK, 0177                /ALLOW 7 BITS
+    9 00022  0140  LOWMSK, 0140                /UPPER LIMIT (IGNORE LOWERCASE AND SOME SPECIAL CHARS)
+   10 00023  0000  KEYSWP, 0
+   11 00024  0000  KEYPTR, 0
+   12 00025  0004  KEYEND, 0004
+   13 00026  0370  CHRMSK, 0370
+   14 00027  7776  SUBONE, 7776
+   15 00030  0040  CNST32, 0040
+   16 00031  0000  ENDCHK, 0                                       /BUFFER FOR END-OF-CHAR CHECK
+   17              
+   18        0200          *200                /LOCATE @ 0200
+   19              
+   20 00200  7300  MAIN,   CLA CLL
+   21 00201  4260                  JMS TTYIN                       /READ CHAR
+   22 00202  3020                  DCA KEYBUF                      /STORE CHAR
+   23 00203  1021                  TAD KEYMSK                      /LOAD MASK
+   24 00204  7040                  CMA                                     /INVERT
+   25 00205  0020                  AND KEYBUF                      /AND WITH KEYBUF
+   26 00206  7640                  SZA CLA                         /IS BIT 8 SET?
+   27 00207  5200                  JMP MAIN                        /YES, IGNORE KEY
+   28 00210  1020                  TAD KEYBUF                      /GET INPUT CHAR
+   29 00211  7041          CMA IAC                         /MAKE 2-COMPLEMENT, GET NEGATIVE VALUE
+   30 00212  1022                  TAD LOWMSK                      /ADD UPPER LIMIT MASK (THUS SUBTRACTING INPUT KEY)
+   31 00213  7750                  SPA SNA CLA                     /IS IT PRINTABLE? (POSITIVE NON-ZERO IS BELOW LIMIT)
+   32 00214  5200                  JMP MAIN                        /NO, IGNORE KEY
+   33 00215  7100                  CLL                                     /CLEAR LINK AFTER COMPARISON, MESSES WITH ROTATIONS BELOW
+   34 00216  1030                  TAD CNST32                      /LOAD CONSTANT 32
+   35 00217  7041                  CMA IAC                         /COMPLEMENT AND ADD 1 GIVES -32
+   36 00220  1020                  TAD KEYBUF                      /GET INPUT KEY AGAIN (THUS SUBTRACT 32)
+   37 00221  1377                  TAD (LOOKUP)            /ADD ARRAY BASE (WE KNOW THAT 31 < KEYBUF < 128, SO AC IS BETWEEN 0 AND 127)
+   38 00222  3024                  DCA KEYPTR                      /STORE KEY POINTER
+   39 00223  1424                  TAD I KEYPTR            /FETCH WHAT IT POINTS TO
+   40 00224  1027                  TAD SUBONE                      /SUBTRACT 1
+   41 00225  7001                  IAC
+   42 00226  3010                  DCA AIX1                        /STORE IN AUTO-INC REGISTER
+   43                              
+   44 00227  1410  PRTSEG, TAD I AIX1                      /FETCH NEXT CHAR SEGMENT
+   45 00230  3023                  DCA KEYSWP                      /STORE IN SWAP BUFFER
+   46 00231  1023                  TAD KEYSWP                      /LOAD THE SEGMENT AGAIN
+   47 00232  7002                  BSW                                     /SWAP HIGH BITS WITH LOW
+   48 00233  4237                  JMS ROTPRT                      /ROTATE AND PRINT
+   49 00234  1023                  TAD KEYSWP                      /LOAD SEGMENT
+   50 00235  4237                  JMS ROTPRT                      /ROTATE AND PRINT
+
+
+
+      / PDP-8/E PAPER TAPE LABELER                                        Page 2
+
+
+   51 00236  5227                  JMP PRTSEG                      /LOOP
+   52                              
+   53 00237  0000  ROTPRT, 0
+   54 00240  0021                  AND KEYMSK                      /MASK 7 BITS (NOT NECESSARY?)
+   55 00241  7006                  RTL                                     /ROT TO MSB
+   56 00242  3031                  DCA ENDCHK                      /STORE CHAR FOR END-CHECK
+   57 00243  1031                  TAD ENDCHK                      /FETCH IT
+   58 00244  4265                  JMS TTYOUT                      /PRINT IT
+   59 00245  4250                  JMS ENDPRT                      /LAST SEGMENT?
+   60 00246  7300                  CLA CLL
+   61 00247  5637                  JMP I ROTPRT            /LOOP
+   62              
+   63 00250  0000  ENDPRT, 0
+   64 00251  1031                  TAD ENDCHK                      /LOAD CHAR
+   65 00252  0025                  AND KEYEND                      /CHECK BIT 2 SET?
+   66 00253  7450                  SNA
+   67 00254  5650                  JMP I ENDPRT            /IF NOT, PRINT NEXT SEGMENT
+   68 00255  7300                  CLA CLL
+   69 00256  4265                  JMS TTYOUT                      /PRINT END-OF-CHAR SPACE
+   70 00257  5200                  JMP MAIN                        /RETURN TO MAIN LOOP
+   71                              
+   72              
+   73 00260  0000  TTYIN,  0                                       /TTY INPUT SUB-ROUTINE
+   74 00261  6031          KSF                                     /IS KEYBOARD FLAG SET?
+   75 00262  5261          JMP .-1                         /CHECK AGAIN
+   76 00263  6036          KRB                                     /READ KEYBOARD BUFFER
+   77 00264  5660          JMP I TTYIN                     /RETURN
+   78              
+   79              
+   80 00265  0000  TTYOUT, 0                                       /TTY OUTPUT SUB-ROUTINE
+   81 00266  0026                  AND CHRMSK                      /STRIP BITS 0-2
+   82 00267  6046          TLS                                     /WRITE ACC TO TTY
+   83 00270  6041          TSF                                     /TTY READY? SKIP! 
+   84 00271  5270          JMP .-1                         /CHECK AGAIN
+   85 00272  5665          JMP I TTYOUT            /RETURN 
+   86              
+   87              
+   88              / CODE BELOW THIS LINE IS AUTO-GENERATED. BEWARE!
+   89              
+   90        0300          *300
+   91              
+   92 00300  0100  SYMSPC, 0100
+   93 00301  5700  SYMEXC, 5700
+   94 00302  0607  SYMQTE, 0607
+   95 00303  2476  SYMHSH, 2476
+   96 00304  2476          2476
+   97 00305  2500          2500
+   98 00306  4452  SYMDLR, 4452
+   99 00307  7623          7623
+  100 00310  4626  SYMPCT, 4626
+
+
+
+      / PDP-8/E PAPER TAPE LABELER                                        Page 3
+
+
+  101 00311  1064          1064
+  102 00312  6300          6300
+  103 00313  6452  SYMAMP, 6452
+  104 00314  2651          2651
+  105 00315  0700  SYMAPO, 0700
+  106 00316  4235  SYMOPA, 4235
+  107 00317  3443  SYMCPA, 3443
+  108 00320  2434  SYMAST, 2434
+  109 00321  2500          2500
+  110 00322  1034  SYMPLS, 1034
+  111 00323  1100          1100
+  112 00324  4021  SYMCOM, 4021
+  113 00325  1010  SYMDSH, 1010
+  114 00326  1100          1100
+  115 00327  6061  SYMPRD, 6061
+  116 00330  4020  SYMSLA, 4020
+  117 00331  1004          1004
+  118 00332  0300          0300
+  119 00333  3452  DIG0,   3452
+  120 00334  4635          4635
+  121 00335  4476  DIG1,   4476
+  122 00336  4100          4100
+  123 00337  4462  DIG2,   4462
+  124 00340  5245          5245
+  125 00341  4242  DIG3,   4242
+  126 00342  5225          5225
+  127 00343  1610  DIG4,   1610
+  128 00344  7611          7611
+  129 00345  5652  DIG5,   5652
+  130 00346  5223          5223
+  131 00347  3452  DIG6,   3452
+  132 00350  5223          5223
+  133 00351  0662  DIG7,   0662
+  134 00352  1207          1207
+  135 00353  2452  DIG8,   2452
+  136 00354  5225          5225
+  137 00355  0452  DIG9,   0452
+  138 00356  5235          5235
+      00377  0500
+  139        0400          *400
+  140 00400  2500  SYMCOL, 2500
+  141 00401  4025  SYMSCL, 4025
+  142 00402  1024  SYMLT,  1024
+  143 00403  4300          4300
+  144 00404  2424  SYMEQ,  2424
+  145 00405  2500          2500
+  146 00406  4224  SYMGT,  4224
+  147 00407  1100          1100
+  148 00410  0252  SYMQM,  0252
+  149 00411  1700          1700
+
+
+
+      / PDP-8/E PAPER TAPE LABELER                                        Page 4
+
+
+  150 00412  3442  SYMAT,  3442
+  151 00413  5267          5267
+  152 00414  7412  LTRA,   7412
+  153 00415  1275          1275
+  154 00416  7652  LTRB,   7652
+  155 00417  5225          5225
+  156 00420  3442  LTRC,   3442
+  157 00421  4243          4243
+  158 00422  7642  LTRD,   7642
+  159 00423  4235          4235
+  160 00424  7652  LTRE,   7652
+  161 00425  5243          5243
+  162 00426  7612  LTRF,   7612
+  163 00427  1203          1203
+  164 00430  3442  LTRG,   3442
+  165 00431  5263          5263
+  166 00432  7610  LTRH,   7610
+  167 00433  1077          1077
+  168 00434  4276  LTRI,   4276
+  169 00435  4300          4300
+  170 00436  2040  LTRJ,   2040
+  171 00437  4037          4037
+  172 00440  7610  LTRK,   7610
+  173 00441  2443          2443
+  174 00442  7640  LTRL,   7640
+  175 00443  4041          4041
+  176 00444  7604  LTRM,   7604
+  177 00445  1004          1004
+  178 00446  7700          7700
+  179 00447  7614  LTRN,   7614
+  180 00450  3077          3077
+  181 00451  3442  LTRO,   3442
+  182 00452  4235          4235
+  183 00453  7612  LTRP,   7612
+  184 00454  1205          1205
+  185 00455  3442  LTRQ,   3442
+  186 00456  6234          6234
+  187 00457  4100          4100
+  188 00460  7612  LTRR,   7612
+  189 00461  3245          3245
+  190 00462  4452  LTRS,   4452
+  191 00463  5223          5223
+  192 00464  0202  LTRT,   0202
+  193 00465  7602          7602
+  194 00466  0300          0300
+  195 00467  3640  LTRU,   3640
+  196 00470  4037          4037
+  197 00471  1620  LTRV,   1620
+  198 00472  4020          4020
+  199 00473  1700          1700
+
+
+
+      / PDP-8/E PAPER TAPE LABELER                                        Page 5
+
+
+  200 00474  7620  LTRW,   7620
+  201 00475  1020          1020
+  202 00476  7700          7700
+  203 00477  4224  LTRX,   4224
+  204 00500  1024          1024
+  205 00501  4300          4300
+  206 00502  0204  LTRY,   0204
+  207 00503  7004          7004
+  208 00504  0300          0300
+  209 00505  4262  LTRZ,   4262
+  210 00506  5246          5246
+  211 00507  4300          4300
+  212 00510  4242  SYMOBR, 4242
+  213 00511  7700          7700
+  214 00512  0204  SYMBSL, 0204
+  215 00513  1020          1020
+  216 00514  4100          4100
+  217 00515  7642  SYMCBR, 7642
+  218 00516  4300          4300
+  219 00517  0402  SYMCIR, 0402
+  220 00520  0500          0500
+  221 00521  4040  SYMULN, 4040
+  222 00522  4041          4041
+  223              
+  224        0500          *500
+  225              
+  226 00500  0300  LOOKUP, SYMSPC
+  227 00501  0301          SYMEXC
+  228 00502  0302          SYMQTE
+  229 00503  0303          SYMHSH
+  230 00504  0306          SYMDLR
+  231 00505  0310          SYMPCT
+  232 00506  0313          SYMAMP
+  233 00507  0315          SYMAPO
+  234 00510  0316          SYMOPA
+  235 00511  0317          SYMCPA
+  236 00512  0320          SYMAST
+  237 00513  0322          SYMPLS
+  238 00514  0324          SYMCOM
+  239 00515  0325          SYMDSH
+  240 00516  0327          SYMPRD
+  241 00517  0330          SYMSLA
+  242 00520  0333          DIG0
+  243 00521  0335          DIG1
+  244 00522  0337          DIG2
+  245 00523  0341          DIG3
+  246 00524  0343          DIG4
+  247 00525  0345          DIG5
+  248 00526  0347          DIG6
+  249 00527  0351          DIG7
+
+
+
+      / PDP-8/E PAPER TAPE LABELER                                        Page 6
+
+
+  250 00530  0353          DIG8
+  251 00531  0355          DIG9
+  252 00532  0400          SYMCOL
+  253 00533  0401          SYMSCL
+  254 00534  0402          SYMLT
+  255 00535  0404          SYMEQ
+  256 00536  0406          SYMGT
+  257 00537  0410          SYMQM
+  258 00540  0412          SYMAT
+  259 00541  0414          LTRA
+  260 00542  0416          LTRB
+  261 00543  0420          LTRC
+  262 00544  0422          LTRD
+  263 00545  0424          LTRE
+  264 00546  0426          LTRF
+  265 00547  0430          LTRG
+  266 00550  0432          LTRH
+  267 00551  0434          LTRI
+  268 00552  0436          LTRJ
+  269 00553  0440          LTRK
+  270 00554  0442          LTRL
+  271 00555  0444          LTRM
+  272 00556  0447          LTRN
+  273 00557  0451          LTRO
+  274 00560  0453          LTRP
+  275 00561  0455          LTRQ
+  276 00562  0460          LTRR
+  277 00563  0462          LTRS
+  278 00564  0464          LTRT
+  279 00565  0467          LTRU
+  280 00566  0471          LTRV
+  281 00567  0474          LTRW
+  282 00570  0477          LTRX
+  283 00571  0502          LTRY
+  284 00572  0505          LTRZ
+  285 00573  0510          SYMOBR
+  286 00574  0512          SYMBSL
+  287 00575  0515          SYMCBR
+  288 00576  0517          SYMCIR
+  289 00577  0521          SYMULN
+  290              
+  291              $
+
+      No detected errors
+      No links generated
