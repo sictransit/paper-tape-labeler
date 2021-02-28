@@ -28,19 +28,38 @@ namespace FontAssembler
 
             var glyphs = lines.Select(x => ParseLine(x)).OrderBy(x => (int)x.Character).ToArray();
 
+            var digits = glyphs.Where(x => char.IsDigit(x.Character)).ToArray();
+            var letters = glyphs.Where(x => char.IsLetter(x.Character)).ToArray();
+            var symbols = glyphs.Except(digits).Except(letters).ToArray();
+
+            var glyphTable = glyphs.Select(Pack).SelectMany(x => x);
+            var lookup = CreateLookup(glyphs);
+
             var code = File.ReadAllLines(asmFile).Reverse().SkipWhile(x => !x.Contains("BEWARE!")).Reverse();
 
             var asm = new List<string>();
 
             asm.AddRange(code);
-            asm.Add(string.Empty);
-            asm.Add("\t*300");
-            asm.Add(string.Empty);
-            asm.AddRange(glyphs.Select(Pack).SelectMany(x => x).ToArray());
-            asm.Add(string.Empty);
-            asm.Add("\t*500");
-            asm.Add(string.Empty);            
-            asm.AddRange(CreateLookup(glyphs));
+
+            void Locate(int address)
+            {
+                asm.Add(string.Empty);
+                asm.Add($"\t*{address}");
+                asm.Add(string.Empty);
+            }
+
+            Locate(300);
+            asm.AddRange(digits.Select(Pack).SelectMany(x => x));
+
+            Locate(400);
+            asm.AddRange(letters.Select(Pack).SelectMany(x => x));
+
+            Locate(500);
+            asm.AddRange(symbols.Select(Pack).SelectMany(x => x));
+
+            Locate(600);
+            asm.AddRange(lookup);
+
             asm.Add(string.Empty);
             asm.Add("$");
 
@@ -110,12 +129,6 @@ namespace FontAssembler
                     word = 0;
                 }
             }
-
-            if (glyph.Character == '9')
-            {
-                lines.Add("\t*400");
-            }
-
 
             return lines;
         }
