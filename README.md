@@ -12,4 +12,4 @@ All supported letters displayed using [Core8](https://github.com/sictransit/core
 
 # Credit
 
-The DEC 5-bit font was borrowed from [@MattisLind](https://github.com/MattisLind/papertapetext) and adapted to use bit 2 as terminator instead of a zero value.
+The DEC 5-bit font was borrowed from [@MattisLind](https://github.com/MattisLind/papertapetext) and adapted to use bit 2 as terminator instead of a zero value. This saved a few precious words of memory and simplified the handling of the whitespace character.
