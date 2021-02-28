@@ -8,7 +8,7 @@ namespace FontAssembler
         {
             Character = c;
             Label = label;
-            Definition = definition.Length % 2 == 0 ? definition : definition.Concat(new[] { 0 }).ToArray();
+            Definition = definition;
         }
 
         public char Character { get; }

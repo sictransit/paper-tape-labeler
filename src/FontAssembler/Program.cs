@@ -49,13 +49,13 @@ namespace FontAssembler
 
         private static IEnumerable<string> CreateLookup(Glyph[] glyphs)
         {
-            yield return "LOOKUP,\t.";            
-
             for (var c = 32; c < 96; c++)
             {
                 var glyph = glyphs.Single(x => x.Character == (char)c);
 
-                yield return $"      \t{glyph.Label}";
+                var label = c == 32 ? "LOOKUP," : "       ";
+
+                yield return $"{label}\t{glyph.Label}";
             }            
         }
 
@@ -81,15 +81,25 @@ namespace FontAssembler
 
             var lines = new List<string>();
 
-            for (var i = 0; i < glyph.Definition.Length; i++)
+            var definition = glyph.Definition.ToList();
+
+            definition[^1] |= 0b_0000_0100;
+            if (definition.Count % 2 != 0)
             {
+                definition.Add(0);
+            }
+
+            for (var i = 0; i < definition.Count; i++)
+            {
+                var def = definition[i];
+
                 if (i % 2 == 0)
                 {
-                    word |= (glyph.Definition[i] & 0b_1111_1100) << 4;
+                    word |= (def & 0b_1111_1100) << 4;
                 }
                 else
                 {
-                    word |= (glyph.Definition[i] & 0b_1111_1100) >> 2;
+                    word |= (def & 0b_1111_1100) >> 2;
 
                     var line = lines.Count == 0
                         ? $"{glyph.Label},{new string(' ', 6 - glyph.Label.Length)}\t{word.ToOctalString()}"
@@ -101,7 +111,7 @@ namespace FontAssembler
                 }
             }
 
-            if (glyph.Character == '8')
+            if (glyph.Character == '9')
             {
                 lines.Add("\t*400");
             }

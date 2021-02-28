@@ -9,8 +9,11 @@ KEYMSK, 0177                /ALLOW 7 BITS
 LOWMSK, 0140                /UPPER LIMIT (IGNORE LOWERCASE AND SOME SPECIAL CHARS)
 KEYSWP, 0
 KEYPTR, 0
+KEYEND, 0004
+CHRMSK, 0370
 SUBONE, 7776
 CNST32, 0040
+ENDCHK, 0
 
         *200                /LOCATE @ 0200
 
@@ -47,14 +50,25 @@ PRTSEG,	TAD I AIX1
 		JMS ROTPRT
 		JMP PRTSEG
 		
-ROTPRT, .
+ROTPRT, 0
 		AND KEYMSK
 		RTL
+		DCA ENDCHK
+		TAD ENDCHK
 		JMS TTYOUT
-		SNA 
-		JMP MAIN
+		JMS ENDPRT
 		CLA CLL
 		JMP I ROTPRT
+
+ENDPRT, 0
+		TAD ENDCHK
+		AND KEYEND
+		SNA
+		JMP I ENDPRT
+		CLA CLL
+		JMS TTYOUT
+		JMP MAIN
+		
 
 TTYIN,  0
         KSF
@@ -64,6 +78,7 @@ TTYIN,  0
 
 
 TTYOUT, 0                   /TTY OUTPUT SUB-ROUTINE
+		AND CHRMSK			/STRIP BITS 0-2
         TLS                 /WRITE ACC TO TTY
         TSF                 /TTY READY? SKIP! 
         JMP .-1             /CHECK AGAIN
@@ -74,240 +89,203 @@ TTYOUT, 0                   /TTY OUTPUT SUB-ROUTINE
 
 	*300
 
-SYMSPC,	7777
-      	7700
-SYMEXC,	5600
-SYMQTE,	0606
-      	0000
+SYMSPC,	0100
+SYMEXC,	5700
+SYMQTE,	0607
 SYMHSH,	2476
       	2476
-      	2400
+      	2500
 SYMDLR,	4452
-      	7622
-      	0000
+      	7623
 SYMPCT,	4626
       	1064
-      	6200
+      	6300
 SYMAMP,	6452
-      	2650
-      	0000
-SYMAPO,	0600
-SYMOPA,	4234
-      	0000
-SYMCPA,	3442
-      	0000
+      	2651
+SYMAPO,	0700
+SYMOPA,	4235
+SYMCPA,	3443
 SYMAST,	2434
-      	2400
+      	2500
 SYMPLS,	1034
-      	1000
-SYMCOM,	4020
-      	0000
+      	1100
+SYMCOM,	4021
 SYMDSH,	1010
-      	1000
-SYMPRD,	6060
-      	0000
+      	1100
+SYMPRD,	6061
 SYMSLA,	4020
       	1004
-      	0200
+      	0300
 DIG0,  	3452
-      	4634
-      	0000
+      	4635
 DIG1,  	4476
-      	4000
+      	4100
 DIG2,  	4462
-      	5244
-      	0000
+      	5245
 DIG3,  	4242
-      	5224
-      	0000
+      	5225
 DIG4,  	1610
-      	7610
-      	0000
+      	7611
 DIG5,  	5652
-      	5222
-      	0000
+      	5223
 DIG6,  	3452
-      	5222
-      	0000
+      	5223
 DIG7,  	0662
-      	1206
-      	0000
+      	1207
 DIG8,  	2452
-      	5224
-      	0000
-	*400
+      	5225
 DIG9,  	0452
-      	5234
-      	0000
-SYMCOL,	2400
-SYMSCL,	4024
-      	0000
+      	5235
+	*400
+SYMCOL,	2500
+SYMSCL,	4025
 SYMLT, 	1024
-      	4200
+      	4300
 SYMEQ, 	2424
-      	2400
+      	2500
 SYMGT, 	4224
-      	1000
+      	1100
 SYMQM, 	0252
-      	1600
+      	1700
 SYMAT, 	3442
-      	5266
-      	0000
+      	5267
 LTRA,  	7412
-      	1274
-      	0000
+      	1275
 LTRB,  	7652
-      	5224
-      	0000
+      	5225
 LTRC,  	3442
-      	4242
-      	0000
+      	4243
 LTRD,  	7642
-      	4234
-      	0000
+      	4235
 LTRE,  	7652
-      	5242
-      	0000
+      	5243
 LTRF,  	7612
-      	1202
-      	0000
+      	1203
 LTRG,  	3442
-      	5262
-      	0000
+      	5263
 LTRH,  	7610
-      	1076
-      	0000
+      	1077
 LTRI,  	4276
-      	4200
+      	4300
 LTRJ,  	2040
-      	4036
-      	0000
+      	4037
 LTRK,  	7610
-      	2442
-      	0000
+      	2443
 LTRL,  	7640
-      	4040
-      	0000
+      	4041
 LTRM,  	7604
       	1004
-      	7600
+      	7700
 LTRN,  	7614
-      	3076
-      	0000
+      	3077
 LTRO,  	3442
-      	4234
-      	0000
+      	4235
 LTRP,  	7612
-      	1204
-      	0000
+      	1205
 LTRQ,  	3442
       	6234
-      	4000
+      	4100
 LTRR,  	7612
-      	3244
-      	0000
+      	3245
 LTRS,  	4452
-      	5222
-      	0000
+      	5223
 LTRT,  	0202
       	7602
-      	0200
+      	0300
 LTRU,  	3640
-      	4036
-      	0000
+      	4037
 LTRV,  	1620
       	4020
-      	1600
+      	1700
 LTRW,  	7620
       	1020
-      	7600
+      	7700
 LTRX,  	4224
       	1024
-      	4200
+      	4300
 LTRY,  	0204
       	7004
-      	0200
+      	0300
 LTRZ,  	4262
       	5246
-      	4200
+      	4300
 SYMOBR,	4242
-      	7600
+      	7700
 SYMBSL,	0204
       	1020
-      	4000
+      	4100
 SYMCBR,	7642
-      	4200
+      	4300
 SYMCIR,	0402
-      	0400
+      	0500
 SYMULN,	4040
-      	4040
-      	0000
+      	4041
 
 	*500
 
-LOOKUP, SYMSPC
-      	SYMEXC
-      	SYMQTE
-      	SYMHSH
-      	SYMDLR
-      	SYMPCT
-      	SYMAMP
-      	SYMAPO
-      	SYMOPA
-      	SYMCPA
-      	SYMAST
-      	SYMPLS
-      	SYMCOM
-      	SYMDSH
-      	SYMPRD
-      	SYMSLA
-      	DIG0
-      	DIG1
-      	DIG2
-      	DIG3
-      	DIG4
-      	DIG5
-      	DIG6
-      	DIG7
-      	DIG8
-      	DIG9
-      	SYMCOL
-      	SYMSCL
-      	SYMLT
-      	SYMEQ
-      	SYMGT
-      	SYMQM
-      	SYMAT
-      	LTRA
-      	LTRB
-      	LTRC
-      	LTRD
-      	LTRE
-      	LTRF
-      	LTRG
-      	LTRH
-      	LTRI
-      	LTRJ
-      	LTRK
-      	LTRL
-      	LTRM
-      	LTRN
-      	LTRO
-      	LTRP
-      	LTRQ
-      	LTRR
-      	LTRS
-      	LTRT
-      	LTRU
-      	LTRV
-      	LTRW
-      	LTRX
-      	LTRY
-      	LTRZ
-      	SYMOBR
-      	SYMBSL
-      	SYMCBR
-      	SYMCIR
-      	SYMULN
+LOOKUP,	SYMSPC
+       	SYMEXC
+       	SYMQTE
+       	SYMHSH
+       	SYMDLR
+       	SYMPCT
+       	SYMAMP
+       	SYMAPO
+       	SYMOPA
+       	SYMCPA
+       	SYMAST
+       	SYMPLS
+       	SYMCOM
+       	SYMDSH
+       	SYMPRD
+       	SYMSLA
+       	DIG0
+       	DIG1
+       	DIG2
+       	DIG3
+       	DIG4
+       	DIG5
+       	DIG6
+       	DIG7
+       	DIG8
+       	DIG9
+       	SYMCOL
+       	SYMSCL
+       	SYMLT
+       	SYMEQ
+       	SYMGT
+       	SYMQM
+       	SYMAT
+       	LTRA
+       	LTRB
+       	LTRC
+       	LTRD
+       	LTRE
+       	LTRF
+       	LTRG
+       	LTRH
+       	LTRI
+       	LTRJ
+       	LTRK
+       	LTRL
+       	LTRM
+       	LTRN
+       	LTRO
+       	LTRP
+       	LTRQ
+       	LTRR
+       	LTRS
+       	LTRT
+       	LTRU
+       	LTRV
+       	LTRW
+       	LTRX
+       	LTRY
+       	LTRZ
+       	SYMOBR
+       	SYMBSL
+       	SYMCBR
+       	SYMCIR
+       	SYMULN
 
 $
